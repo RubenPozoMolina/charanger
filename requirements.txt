@@ -9,3 +9,4 @@ accelerate
 transformers
 controlnet_aux
 matplotlib
+xformers

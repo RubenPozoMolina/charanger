@@ -1,4 +1,8 @@
+import datetime
+
+import torch
 from PIL import Image
+from diffusers import StableDiffusionPipeline
 
 
 class ImageUtils:
@@ -40,3 +44,29 @@ class ImageUtils:
         # Resize to target dimensions
         image = image.resize((width, height), Image.LANCZOS)
         image.save(output_image_path)
+
+    @staticmethod
+    def generate_image_from_text(
+        prompt, negative_prompt,
+        model, output_image_path, height=512, width=512,
+    ):
+        # Prepare the pipeline
+        pipe = StableDiffusionPipeline.from_pretrained(
+            model, torch_dtype=torch.float16
+        ).to("cuda")
+        torch.cuda.empty_cache()
+        pipe.enable_xformers_memory_efficient_attention()
+
+        # Generate image
+        image = pipe(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            num_inference_steps=50,
+            height=height,
+            width=width,
+            strength=0.5
+        ).images[0]
+
+        # Save image
+        output_file = output_image_path
+        image.save(output_file)

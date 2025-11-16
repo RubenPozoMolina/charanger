@@ -1,4 +1,4 @@
 # charanger
 
-Library to modify images with AI
+Library to modify images with AI. A character changer 
 

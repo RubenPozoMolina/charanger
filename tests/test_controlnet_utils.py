@@ -11,7 +11,7 @@ class TestControlNetUtils:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         output_file = f"output/{timestamp}_dancing_girl.png"
         controlnet_utils.image_to_control_canny(
-            "assets/girl_dancing.jpg",
+            "assets/girl_dancing1.jpg",
             output_file
         )
         os.path.isfile(output_file)
@@ -21,7 +21,7 @@ class TestControlNetUtils:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         output_file = f"output/{timestamp}_dancing_girl.png"
         controlnet_utils.image_to_control_pose(
-            "assets/girl_dancing.jpg",
+            "assets/girl_dancing1.jpg",
             output_file
         )
         os.path.isfile(output_file)
@@ -31,7 +31,7 @@ class TestControlNetUtils:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         output_file = f"output/{timestamp}_dancing_girl.png"
         controlnet_utils.image_to_control_depth(
-            f"assets/girl_dancing.jpg",
+            f"assets/girl_dancing1.jpg",
             output_file
         )
         os.path.isfile(output_file)

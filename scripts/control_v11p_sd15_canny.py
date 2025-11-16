@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import torch
 from diffusers.utils import load_image
 import numpy as np
@@ -13,30 +15,62 @@ from diffusers import (
 checkpoint = "lllyasviel/control_v11p_sd15_canny"
 
 image = load_image(
-    "https://huggingface.co/lllyasviel/control_v11p_sd15_canny/resolve/main/images/input.png"
+    "assets/girl_dancing2.jpg"
 )
 
 image = np.array(image)
 
-low_threshold = 100
-high_threshold = 200
-
-image = cv2.Canny(image, low_threshold, high_threshold)
+low_threshold = 50
+high_threshold = 150
+image_blur = cv2.GaussianBlur(image, (5, 5), 1.0)
+image = cv2.Canny(image_blur, low_threshold, high_threshold)
 image = image[:, :, None]
 image = np.concatenate([image, image, image], axis=2)
 control_image = Image.fromarray(image)
 
-control_image.save("output/control.png")
+control_image.save("output/control_dancing_girl.png")
 
-controlnet = ControlNetModel.from_pretrained(checkpoint, torch_dtype=torch.float16)
+controlnet = ControlNetModel.from_pretrained(
+    checkpoint,
+    torch_dtype=torch.float16
+)
+
+# model = "runwayml/stable-diffusion-v1-5"
+model = "lykon/dreamshaper-8"
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
-    "runwayml/stable-diffusion-v1-5", controlnet=controlnet, torch_dtype=torch.float16
+    model,
+    controlnet=controlnet,
+    torch_dtype=torch.float16,
+    safety_checker=None,
+    requires_safety_checker=False
 )
 
 pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 pipe.enable_model_cpu_offload()
 
-generator = torch.manual_seed(33)
-image = pipe("a blue paradise bird in the jungle", num_inference_steps=20, generator=generator, image=control_image).images[0]
+# seed = random.randint(0, 100)
+prompt = "A redhead girl with a blue dress dancing on the beach"
+negative_prompt = """
+deformed, ugly, mutilated, disfigured, bad anatomy, bad proportions,
+extra limbs, cloned face, deformed face, malformed limbs, 
+missing arms, missing legs, extra arms, extra legs, 
+fused fingers, too many fingers, long neck, cross-eyed,
+mutated hands, poorly drawn hands, poorly drawn face,
+mutation, bad hands, extra fingers, text, watermark
+"""
 
-image.save('output/image_out.png')
+for seed in range(10):
+    generator = torch.manual_seed(seed)
+    image = pipe(
+        prompt=prompt,
+        negative_prompt=negative_prompt,
+        num_inference_steps=30,
+        guidance_scale=7.0,
+        controlnet_conditioning_scale=0.6,
+        generator=generator,
+        image=control_image,
+        safety_checker=None,
+        requires_safety_checker=False
+    ).images[0]
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    image.save(f'output/{timestamp}_dancing_girl.png')

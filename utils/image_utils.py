@@ -9,7 +9,7 @@ class ImageUtils:
 
     image = None
 
-    def __init__(self, input_image_path):
+    def __init__(self, input_image_path=None):
         self.image = input_image_path
 
     def resize_image(self, output_image_path, width=512, height=512):

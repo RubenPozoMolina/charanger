@@ -16,7 +16,7 @@ class TestImageUtils:
         assert os.path.exists("output/resized_image.jpg")
 
     def test_generate_image_from_text(self):
-        image_utils = ImageUtils(None)
+        image_utils = ImageUtils()
         prompt = """
             A redhead girl with a blue dress dancing on the beach. Full body.
             Realistic. HD. Details

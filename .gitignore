@@ -210,3 +210,4 @@ __marimo__/
 /.idea/
 /local_scripts/
 /input/
+/.venv_remote/

@@ -10,3 +10,4 @@ transformers
 controlnet_aux
 matplotlib
 xformers
+ip_adapter

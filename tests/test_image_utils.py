@@ -8,7 +8,7 @@ class TestImageUtils:
 
     def test_resize_image(self):
         image_utils = ImageUtils("assets/girl_dancing2_old.jpg")
-        image_utils.resize_image(
+        image_utils.resize_image_to_file(
             "output/resized_image.jpg",
             width=720,
             height=1280

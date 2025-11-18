@@ -12,7 +12,7 @@ class ImageUtils:
     def __init__(self, input_image_path=None):
         self.image = input_image_path
 
-    def resize_image(self, output_image_path, width=512, height=512):
+    def resize_image(self, width=512, height=512):
         image = Image.open(self.image)
 
         # Calculate aspect ratios
@@ -43,6 +43,10 @@ class ImageUtils:
 
         # Resize to target dimensions
         image = image.resize((width, height), Image.LANCZOS)
+        return image
+
+    def resize_image_to_file(self, output_image_path, width=512, height=512):
+        image = self.resize_image(width, height)
         image.save(output_image_path)
 
     @staticmethod

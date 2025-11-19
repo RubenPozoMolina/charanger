@@ -6,7 +6,6 @@ from diffusers import StableDiffusionPipeline
 
 
 class ImageUtils:
-
     image = None
 
     def __init__(self, input_image_path=None):
@@ -51,8 +50,8 @@ class ImageUtils:
 
     @staticmethod
     def generate_image_from_text(
-        prompt, negative_prompt,
-        model, output_image_path, height=512, width=512,
+            prompt, negative_prompt,
+            model, output_image_path, height=512, width=512,
     ):
         # Prepare the pipeline
         pipe = StableDiffusionPipeline.from_pretrained(
@@ -74,3 +73,38 @@ class ImageUtils:
         # Save image
         output_file = output_image_path
         image.save(output_file)
+
+    def pad_image(self, width=512, height=512, color=(0, 0, 0)):
+        image = Image.open(self.image)
+
+        # Calculate aspect ratios
+        target_aspect = width / height
+        source_width, source_height = image.size
+        source_aspect = source_width / source_height
+
+        if source_aspect > target_aspect:
+            # Image is wider than target, fit width
+            new_width = width
+            new_height = int(width / source_aspect)
+        else:
+            # Image is taller than target, fit height
+            new_height = height
+            new_width = int(height * source_aspect)
+
+        # Resize original image maintaining aspect ratio
+        image = image.resize((new_width, new_height), Image.LANCZOS)
+
+        # Create a new blank image with the target size and color
+        new_image = Image.new("RGB", (width, height), color)
+
+        # Paste the resized image onto the center of the new image
+        paste_x = (width - new_width) // 2
+        paste_y = (height - new_height) // 2
+        new_image.paste(image, (paste_x, paste_y))
+
+        return new_image
+
+    def pad_image_to_file(self, output_image_path, width=512, height=512,
+                          color=(0, 0, 0)):
+        image = self.pad_image(width, height, color)
+        image.save(output_image_path)

@@ -8,6 +8,7 @@ from diffusers import StableDiffusionPipeline, DDIMScheduler, AutoencoderKL, \
 from ip_adapter import IPAdapter
 
 from utils.image_utils import ImageUtils
+from utils.useful_prompts import AVOID_DEFORMATIONS
 
 
 class IPAdapterUtils:
@@ -57,11 +58,8 @@ class IPAdapterUtils:
     @staticmethod
     def image_grid(imgs, rows, cols):
         assert len(imgs) == rows * cols
-
         w, h = imgs[0].size
         grid = Image.new('RGB', size=(cols * w, rows * h))
-        grid_w, grid_h = grid.size
-
         for i, img in enumerate(imgs):
             grid.paste(img, box=(i % cols * w, i // cols * h))
         return grid
@@ -83,15 +81,15 @@ class IPAdapterUtils:
             num_variations=4,
             seed=random.randint(1, 100)
     ):
-        image_utils = ImageUtils(input_image_path=input_image_path)
-        image = image_utils.resize_image()
+        image = Image.open(input_image_path)
 
         images = self.ip_model.generate(
+            negative_prompt=AVOID_DEFORMATIONS,
             pil_image=image,
             num_samples=num_variations,
             num_inference_steps=50,
-            # height=image.height,
-            # width=image.width,
+            height=image.height,
+            width=image.width,
             seed=seed
         )
 
@@ -103,6 +101,8 @@ class IPAdapterUtils:
             input_image_path,
             depth_map_path,
             output_image_path,
+            num_variations=4,
+            seed=random.randint(1, 100)
     ):
         # load controlnet
         controlnet_model_path = "lllyasviel/control_v11f1p_sd15_depth"
@@ -120,16 +120,14 @@ class IPAdapterUtils:
             feature_extractor=None,
             safety_checker=None
         )
-        # read image prompt
-        image_utils = ImageUtils(input_image_path=input_image_path)
-        image = image_utils.resize_image(256, 256)
+        image = Image.open(input_image_path)
+        image_utils = ImageUtils(input_image_path=depth_map_path)
+        depth_map = image_utils.pad_image()
 
-
-        depth_map = Image.open(depth_map_path)
         self.image_grid(
             [
-                image.resize((256, 256)),
-                depth_map.resize((256, 256))
+                image,
+                depth_map
             ], 1,
             2
         )
@@ -140,9 +138,14 @@ class IPAdapterUtils:
             self.device
         )
         images = ip_model.generate(
-            pil_image=image, image=depth_map,
-            num_samples=1, num_inference_steps=50,
-            seed=42
+            negative_prompt=AVOID_DEFORMATIONS,
+            pil_image=image,
+            image=depth_map,
+            num_samples=num_variations,
+            num_inference_steps=50,
+            width=image.width,
+            height=image.height,
+            seed=seed
         )
 
         for i, image in enumerate(images):

@@ -4,7 +4,7 @@ from utils.ip_adapter_utils import IPAdapterUtils
 
 @pytest.fixture(scope="module")
 def ip_adapter_utils():
-    ip_adapter_utils = IPAdapterUtils()
+    ip_adapter_utils = IPAdapterUtils("lykon/dreamshaper-8")
     return ip_adapter_utils
 
 class TestIPAdapterUtils:

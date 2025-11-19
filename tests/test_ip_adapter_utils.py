@@ -21,3 +21,10 @@ class TestIPAdapterUtils:
             "assets/depth_map.png",
             "output/depth"
         )
+
+    def test_generate_image_from_pose(self, ip_adapter_utils: IPAdapterUtils):
+        ip_adapter_utils.generate_image_from_pose(
+            "assets/girl_dancing1.jpg",
+            "assets/pose_map.png",
+            "output/pose"
+        )

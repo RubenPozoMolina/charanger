@@ -150,3 +150,58 @@ class IPAdapterUtils:
 
         for i, image in enumerate(images):
             image.save(output_image_path + f"_{i}.png")
+
+    def generate_image_from_pose(
+            self,
+            input_image_path,
+            depth_map_path,
+            output_image_path,
+            num_variations=4,
+            seed=random.randint(1, 100)
+    ):
+        # load controlnet
+        controlnet_model_path = "lllyasviel/control_v11p_sd15_openpose"
+        controlnet = ControlNetModel.from_pretrained(
+            controlnet_model_path,
+            torch_dtype=torch.float16
+        )
+        # load SD pipeline
+        self.pipeline = StableDiffusionControlNetPipeline.from_pretrained(
+            self.model,
+            controlnet=controlnet,
+            torch_dtype=torch.float16,
+            scheduler=self.noise_scheduler,
+            vae=self.vae,
+            feature_extractor=None,
+            safety_checker=None
+        )
+        image = Image.open(input_image_path)
+        image_utils = ImageUtils(input_image_path=depth_map_path)
+        depth_map = image_utils.pad_image()
+
+        self.image_grid(
+            [
+                image,
+                depth_map
+            ], 1,
+            2
+        )
+        ip_model = IPAdapter(
+            self.pipeline,
+            self.image_encoder_path,
+            self.ip_ckpt,
+            self.device
+        )
+        images = ip_model.generate(
+            negative_prompt=AVOID_DEFORMATIONS,
+            pil_image=image,
+            image=depth_map,
+            num_samples=num_variations,
+            num_inference_steps=50,
+            width=image.width,
+            height=image.height,
+            seed=seed
+        )
+
+        for i, image in enumerate(images):
+            image.save(output_image_path + f"_{i}.png")
